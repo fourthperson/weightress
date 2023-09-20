@@ -9,5 +9,5 @@ data class PastWeight(
     @PrimaryKey(autoGenerate = true) val id: Int,
     @ColumnInfo(name = "weight") val weight: Float,
     @ColumnInfo(name = "notes") val notes: String,
-    @ColumnInfo(name = "date") val date: Int
+    @ColumnInfo(name = "date") val date: Long
 )
