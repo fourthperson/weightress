@@ -32,10 +32,6 @@ class MainViewModel @Inject constructor(
     val history: LiveData<List<Weight>>
         get() = _history
 
-
-    private var newWeight: Float = 0f
-    private var newNotes: String = ""
-
     init {
         loadHistory()
     }
@@ -48,9 +44,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun validate(kgs: String, notes: String): Boolean {
-        newWeight = 0f
-        newNotes = ""
+    fun validate(kgs: String): Boolean {
         val weight = kgs.toFloatOrNull()
         if (weight == null) {
             alertMessage.postValue("Enter a valid weight")
@@ -58,24 +52,20 @@ class MainViewModel @Inject constructor(
             Timber.i("Validation failed!")
             return false
         }
-        newWeight = weight
-        newNotes = notes
         Timber.i("Validation passed!")
         return true
     }
 
-    fun recordWeight() {
+    fun recordWeight(kgs: String, notes: String) {
         viewModelScope.launch(Dispatchers.IO) {
             val newWeight = Weight(
-                weight = newWeight,
-                notes = newNotes,
+                weight = kgs.toFloatOrNull() ?: 0f,
+                notes = notes,
                 date = System.currentTimeMillis()
             )
             recordWeightUseCase.invoke(newWeight)
         }
-        newWeight = 0f
-        newNotes = ""
-        Timber.i("Weight recorded!")
         loadHistory()
+        Timber.i("Weight recorded!")
     }
 }
