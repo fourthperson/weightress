@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -28,7 +27,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +35,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -45,7 +42,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.AndroidEntryPoint
 import iak.wrc.presentation.theme.WcTheme
 import iak.wrc.presentation.theme.rubikFontFamily
@@ -77,7 +73,7 @@ class MainActivity : ComponentActivity() {
 fun MainPage(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
-    // bottom sheet stuff
+    // bottom sheet
     val bottomSheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet: Boolean by remember {
@@ -91,8 +87,9 @@ fun MainPage(
         mutableStateOf("")
     }
 
-    val alertMessage = mainViewModel.alertMessage.observeAsState(initial = "")
-    val showAlert = mainViewModel.showAlert.observeAsState(initial = false)
+    val alertMessage by mainViewModel.alertMessage.observeAsState(initial = "")
+    val showAlert by mainViewModel.showAlert.observeAsState(initial = false)
+    val history by mainViewModel.history.observeAsState()
 
     Scaffold(
         floatingActionButton = {
@@ -110,6 +107,12 @@ fun MainPage(
             )
         }
     ) { _ ->
+        Text(
+            text = "${history?.size?.toString() ?: "null"} Records",
+            fontFamily = rubikFontFamily,
+            fontWeight = FontWeight.Medium,
+            fontSize = 16.sp
+        )
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
@@ -164,8 +167,12 @@ fun MainPage(
                         modifier = Modifier.padding(PaddingValues(top = 16.dp, bottom = 16.dp)),
                         onClick = {
                             scope.launch {
-                                bottomSheetState.hide()
-                                mainViewModel.validate(weightText, notesText)
+                                val valid = mainViewModel.validate(weightText, notesText)
+                                if (valid) {
+                                    bottomSheetState.hide()
+                                } else {
+                                    mainViewModel.recordWeight()
+                                }
                             }.invokeOnCompletion {
                                 if (!bottomSheetState.isVisible) {
                                     showBottomSheet = false
@@ -182,14 +189,14 @@ fun MainPage(
                 }
             }
         }
-        if (showAlert.value == true && alertMessage.value != "") {
+        if (showAlert && alertMessage != "") {
             WRAlert(
                 onDismissRequest = {
                     mainViewModel.showAlert.postValue(false)
                     mainViewModel.alertMessage.postValue("")
                 },
                 dialogTitle = "Error",
-                dialogText = alertMessage.value,
+                dialogText = alertMessage,
                 onConfirmation = {
                     mainViewModel.showAlert.postValue(false)
                     mainViewModel.alertMessage.postValue("")
