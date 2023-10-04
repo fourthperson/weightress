@@ -1,4 +1,4 @@
-package iak.wrc.presentation
+package iak.wrc.presentation.ui
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -11,7 +11,6 @@ import iak.wrc.domain.use_case.RecordWeightUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -29,14 +28,10 @@ class MainViewModel @Inject constructor(
         get() = _showAlert
 
     private val _history = MutableLiveData<List<Weight>>()
-    val history: LiveData<List<Weight>>
+    val history: MutableLiveData<List<Weight>>
         get() = _history
 
-    init {
-        loadHistory()
-    }
-
-    private fun loadHistory() {
+    fun loadHistory() {
         viewModelScope.launch(Dispatchers.IO) {
             getAllWeightsUseCase.invoke().let { results ->
                 _history.postValue(results)

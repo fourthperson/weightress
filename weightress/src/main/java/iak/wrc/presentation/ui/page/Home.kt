@@ -1,16 +1,10 @@
-package iak.wrc.presentation
+package iak.wrc.presentation.ui.page
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,10 +17,8 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -54,41 +46,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dagger.hilt.android.AndroidEntryPoint
+import androidx.lifecycle.viewmodel.compose.viewModel
 import iak.wrc.domain.entity.Weight
-import iak.wrc.presentation.theme.WcTheme
-import iak.wrc.presentation.theme.rubikFontFamily
+import iak.wrc.presentation.ui.MainViewModel
+import iak.wrc.presentation.ui.theme.rubikFontFamily
 import kotlinx.coroutines.launch
-import java.sql.Timestamp
-import java.text.SimpleDateFormat
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
-
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-    private val viewModel by viewModels<MainViewModel>()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            WcTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainPage()
-                }
-            }
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainPage(
+fun HomeScreen(
     mainViewModel: MainViewModel = hiltViewModel()
 ) {
     // bottom sheet
@@ -105,9 +74,13 @@ fun MainPage(
         mutableStateOf("")
     }
 
+    LaunchedEffect(Unit) {
+        mainViewModel.loadHistory()
+    }
+
     val alertMessage by mainViewModel.alertMessage.observeAsState(initial = "")
     val showAlert by mainViewModel.showAlert.observeAsState(initial = false)
-    val history by mainViewModel.history.observeAsState()
+    val history by mainViewModel.history.observeAsState(initial = ArrayList())
 
     Scaffold(
         floatingActionButton = {

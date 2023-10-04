@@ -10,6 +10,7 @@ import iak.wrc.data.source.LocalDataSource
 import iak.wrc.data.source.LocalDataSourceImpl
 import iak.wrc.data.source.db.PastWeightDao
 import iak.wrc.data.source.db.WeightressDb
+import iak.wrc.data.source.prefs.WeightressPrefs
 import iak.wrc.domain.repository.WeightRepo
 import iak.wrc.domain.use_case.GetAllWeightsUseCase
 import iak.wrc.domain.use_case.RecordWeightUseCase
@@ -18,6 +19,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
+    @Provides
+    @Singleton
+    fun prefs(app: Application): WeightressPrefs {
+        return WeightressPrefs.instance(app)
+    }
+
     @Provides
     @Singleton
     fun db(app: Application): WeightressDb {

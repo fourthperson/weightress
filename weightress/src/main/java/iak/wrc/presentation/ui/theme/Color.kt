@@ -1,4 +1,4 @@
-package iak.wrc.presentation.theme
+package iak.wrc.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
