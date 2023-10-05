@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "iak.weightress"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -85,6 +85,7 @@ dependencies {
     implementation("androidx.hilt:hilt-work:1.0.0")
     // utilities
     implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation ("co.yml:ycharts:2.1.0")
     // tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

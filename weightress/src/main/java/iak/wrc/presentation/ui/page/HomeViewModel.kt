@@ -1,9 +1,11 @@
-package iak.wrc.presentation.ui
+package iak.wrc.presentation.ui.page
 
-import androidx.lifecycle.LiveData
+import android.app.Application
+import android.text.format.DateFormat
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.yml.charts.common.model.Point
 import dagger.hilt.android.lifecycle.HiltViewModel
 import iak.wrc.domain.entity.Weight
 import iak.wrc.domain.use_case.GetAllWeightsUseCase
@@ -11,10 +13,15 @@ import iak.wrc.domain.use_case.RecordWeightUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.text.Format
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor(
+class HomeViewModel @Inject constructor(
+    application: Application,
     private val recordWeightUseCase: RecordWeightUseCase,
     private val getAllWeightsUseCase: GetAllWeightsUseCase
 ) :
@@ -30,6 +37,17 @@ class MainViewModel @Inject constructor(
     private val _history = MutableLiveData<List<Weight>>()
     val history: MutableLiveData<List<Weight>>
         get() = _history
+
+    private var deviceDatePattern: String = ""
+    private val chartDateFormat = "dd MMM yy"
+
+    init {
+        val using24Hr = DateFormat.is24HourFormat(application)
+        val dateFormat: Format = DateFormat.getDateFormat(application)
+        val timeFormat = if (using24Hr) "HH:mm:ss" else "h:mm:ss a"
+        deviceDatePattern = (dateFormat as SimpleDateFormat).toLocalizedPattern()
+        deviceDatePattern = "$deviceDatePattern $timeFormat"
+    }
 
     fun loadHistory() {
         viewModelScope.launch(Dispatchers.IO) {
@@ -62,5 +80,32 @@ class MainViewModel @Inject constructor(
         }
         loadHistory()
         Timber.i("Weight recorded!")
+    }
+
+    fun chartPoints(weights: List<Weight>): List<Point> {
+        val list = arrayListOf<Point>()
+        for (i in weights.indices) {
+            list.add(
+                Point(
+                    x = i.toFloat(),
+                    y = weights[i].weight
+                )
+            )
+        }
+        return list
+    }
+
+    fun chartDate(timestamp: Long): String {
+        return formatDate(timestamp = timestamp, chartDateFormat)
+    }
+
+    fun listDate(timestamp: Long): String {
+        return formatDate(timestamp, deviceDatePattern)
+    }
+
+    private fun formatDate(timestamp: Long, format: String): String {
+        val calendar = Calendar.getInstance(Locale.getDefault())
+        calendar.timeInMillis = timestamp
+        return DateFormat.format(format, calendar).toString()
     }
 }
